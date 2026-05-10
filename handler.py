@@ -20,7 +20,7 @@ def start_vllm():
         "--download-dir", HF_HOME,
     ])
 
-def wait_for_vllm(timeout=300):
+def wait_for_vllm(timeout=1200):  # 20분 (모델 다운로드 포함)
     start = time.time()
     while time.time() - start < timeout:
         try:
