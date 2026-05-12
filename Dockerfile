@@ -11,4 +11,5 @@ RUN pip install runpod requests
 
 COPY handler.py .
 
+ENTRYPOINT []
 CMD ["python", "handler.py"]
