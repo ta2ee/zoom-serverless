@@ -9,6 +9,10 @@ MAX_MODEL_LEN = os.environ.get("MAX_MODEL_LEN", "4096")
 HF_HOME = os.environ.get("HF_HOME", "/workspace/huggingface")
 VLLM_URL = "http://localhost:8000"
 
+# torch 컴파일 캐시를 /workspace로 이동 (컨테이너 디스크 절약)
+os.environ["VLLM_COMPILE_CACHE_DIR"] = "/workspace/vllm_cache"
+os.environ["TRITON_CACHE_DIR"] = "/workspace/triton_cache"
+
 def start_vllm():
     print("vLLM 시작 중...")
     subprocess.Popen([
