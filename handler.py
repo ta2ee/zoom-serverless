@@ -12,7 +12,7 @@ VLLM_URL = "http://localhost:8000"
 def start_vllm():
     print("vLLM 시작 중...")
     subprocess.Popen([
-        "python", "-m", "vllm.entrypoints.openai.api_server",
+        "python3", "-m", "vllm.entrypoints.openai.api_server",
         "--model", MODEL_NAME,
         "--port", "8000",
         "--max-model-len", MAX_MODEL_LEN,
