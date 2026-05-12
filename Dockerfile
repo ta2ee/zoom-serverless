@@ -11,5 +11,5 @@ RUN pip install runpod requests
 
 COPY handler.py .
 
-ENTRYPOINT []
-CMD ["python3", "handler.py"]
+ENTRYPOINT ["/bin/bash", "-c"]
+CMD ["python3 /app/handler.py"]
