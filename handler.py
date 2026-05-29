@@ -3,6 +3,7 @@ import subprocess
 import requests
 import time
 import os
+import sys
 
 MODEL_NAME = os.environ.get("MODEL_NAME", "LGAI-EXAONE/EXAONE-3.5-7.8B-Instruct")
 MAX_MODEL_LEN = os.environ.get("MAX_MODEL_LEN", "4096")
@@ -13,9 +14,21 @@ VLLM_URL = "http://localhost:8000"
 os.environ["VLLM_CACHE_ROOT"] = "/workspace/vllm_cache"
 os.environ["TRITON_CACHE_DIR"] = "/workspace/triton_cache"
 os.environ["HF_HOME"] = HF_HOME
+os.environ["PYTHONUNBUFFERED"] = "1"
+
+print(f"[INIT] MODEL_NAME: {MODEL_NAME}", flush=True)
+print(f"[INIT] MAX_MODEL_LEN: {MAX_MODEL_LEN}", flush=True)
+
+# 모델 경로 존재 여부 확인
+if MODEL_NAME.startswith("/"):
+    if os.path.exists(MODEL_NAME):
+        print(f"[INIT] 모델 경로 확인됨: {MODEL_NAME}", flush=True)
+    else:
+        print(f"[ERROR] 모델 경로 없음: {MODEL_NAME}", flush=True)
+        sys.exit(1)
 
 def start_vllm():
-    print("vLLM 시작 중...")
+    print("[vLLM] 시작 중...", flush=True)
     subprocess.Popen([
         "python3", "-m", "vllm.entrypoints.openai.api_server",
         "--model", MODEL_NAME,
@@ -25,18 +38,23 @@ def start_vllm():
         "--download-dir", HF_HOME,
     ])
 
-def wait_for_vllm(timeout=1200):  # 20분 (모델 다운로드 포함)
+def wait_for_vllm(timeout=300):  # 5분 (볼륨에서 로딩)
     start = time.time()
+    last_log = 0
     while time.time() - start < timeout:
         try:
             res = requests.get(f"{VLLM_URL}/v1/models", timeout=5)
             if res.status_code == 200:
-                print("vLLM 준비 완료")
+                print("[vLLM] 준비 완료", flush=True)
                 return True
         except:
             pass
+        elapsed = int(time.time() - start)
+        if elapsed - last_log >= 30:
+            print(f"[vLLM] 로딩 중... {elapsed}s 경과", flush=True)
+            last_log = elapsed
         time.sleep(5)
-    raise RuntimeError("vLLM 타임아웃")
+    raise RuntimeError("vLLM 타임아웃 (5분 초과)")
 
 def handler(job):
     job_input = job["input"]
@@ -62,5 +80,5 @@ def handler(job):
 if __name__ == "__main__":
     start_vllm()
     wait_for_vllm()
-    print("핸들러 시작")
+    print("[INIT] 핸들러 시작", flush=True)
     runpod.serverless.start({"handler": handler})
