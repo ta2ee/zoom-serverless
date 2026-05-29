@@ -24,8 +24,7 @@ if MODEL_NAME.startswith("/"):
     if os.path.exists(MODEL_NAME):
         print(f"[INIT] 모델 경로 확인됨: {MODEL_NAME}", flush=True)
     else:
-        print(f"[ERROR] 모델 경로 없음: {MODEL_NAME}", flush=True)
-        sys.exit(1)
+        print(f"[WARN] 모델 경로 없음: {MODEL_NAME} — vLLM이 직접 처리합니다", flush=True)
 
 def start_vllm():
     print("[vLLM] 시작 중...", flush=True)
